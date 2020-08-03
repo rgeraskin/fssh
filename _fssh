@@ -1,0 +1,13 @@
+#compdef fssh
+#autoload
+
+local state
+
+_arguments \
+  '1: :->client_or_host'\
+  '2: :->host_of_client'
+
+case $state in
+  (client_or_host) compadd $(ANSIBLE_TRANSFORM_INVALID_GROUP_CHARS=ignore ${__FSSH_DIR}/inventory.py --inventory $FSSH_INVENTORY --completion ${FSSH_COMPLETION:-clients}) ;;
+  (host_of_client) compadd $(ANSIBLE_TRANSFORM_INVALID_GROUP_CHARS=ignore ${__FSSH_DIR}/inventory.py --inventory $FSSH_INVENTORY --client $words[2] --completion hosts) ;;
+esac

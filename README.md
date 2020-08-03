@@ -17,14 +17,46 @@ Also `fssh` could be used without zsh to generate ssh configs based on ansible h
 
 ## Install
 
-### Manually
-Installation process for `oh-my-zsh`
+### zplug
+
+1. Add this line in your `~/.zshrc`:
+
+   ```
+   zplug "roman-geraskin/fssh"
+   ```
+1. and, install
+   ```bash
+   $ zplug install
+   ```
+
+### zinit
+
+1. Add this line in your `~/.zshrc`:
+
+   ```
+   zinit load roman-geraskin/fssh
+   ```
+1. Restart your shell
+
+### antibody
+
+1. Add this line in your plugins list file, for example `~/.zsh_plugins.txt`:
+
+   ```
+   roman-geraskin/fssh
+   ```
+1. Restart your shell
+
+
+### oh-my-zsh (manually)
 
 1. Clone repo to plugins dir
+
    ```bash
    $ git clone https://github.com/roman-geraskin/fssh.git ~/.oh-my-zsh/custom/plugins/fssh
    ```
 1. Add `fssh` plugin
+
     ```
     plugins=(... fssh)
     ```
@@ -32,15 +64,16 @@ Installation process for `oh-my-zsh`
 ## Configure
 
 1. Specify required settings in `~/.zshrc`
-    ```
-    FSSH_INVENTORY=~/path/to/ansible/inventories/
-    ```
+
+   ```
+   FSSH_INVENTORY=~/path/to/ansible/inventories/
+   ```
 
 ## Requirements
 
-- [ohmyzsh](https://github.com/ohmyzsh/ohmyzsh) (honestly I didn't try `fssh` without it)
 - ansible (python3 libs are required)
 - ansible inventory directory layout should look like this:
+
   ```
   ➜  inventories git:(master) tree .
   .
@@ -65,6 +98,7 @@ Installation process for `oh-my-zsh`
 ## Usage
 
 For example, client3-gilfoyle ansible inventory `hosts.yaml` is:
+
 ```
 all:
   children:
@@ -96,16 +130,19 @@ all:
 ### SSH using client name and ansible hostname
 
 1. Autocomplete clients
+
    ```
    ➜  ~ fssh <TAB>
    client1  client2  client3
    ```
 1. Autocomplete hosts
+
    ```
    ➜  ~ fssh client3 <TAB>
    anton           backup          db              dev.google.com  hosting
    ```
 1. Get ssh connection string
+
    ```
    ➜  ~ fssh client3 anton<ENTER>
    Composing host string...
@@ -118,6 +155,7 @@ all:
 You should add `FSSH_COMPLETION=both` setting to `~/.zshrc` to connect this way. If you have a lot of inventories this approach will be slower.
 
 1. Autocomplete host or client
+
    ```
    ➜  ~ fssh <TAB>
    anton                  client1                client1.mars           client1.saturn         client2                dev.google.com            mMonica.piedpiper.net
@@ -126,6 +164,7 @@ You should add `FSSH_COMPLETION=both` setting to `~/.zshrc` to connect this way.
    ```
    All client names and all hosts are provided by completion. You could choose any but now we try host-only approach.
 1. Choose host
+
    ```
    ➜  ~ fssh richard.piedpiper.net<ENTER>
    Composing host string...
@@ -135,6 +174,7 @@ You should add `FSSH_COMPLETION=both` setting to `~/.zshrc` to connect this way.
 
 ### Generate ssh configs from ansible inventory
 1. Launch `inventory.py` manually
+
    ```
    ➜  ~ ~/.oh-my-zsh/custom/plugins/fssh/inventory.py --inventory ~/path/to/ansible/inventories/ --config
    client1: 8 hosts
@@ -165,6 +205,7 @@ You should add `FSSH_COMPLETION=both` setting to `~/.zshrc` to connect this way.
    To support this your ssh client should be recent enough.
 
 1. Now you could connect to the hosts using ssh only. Autocompletion works too!
+
    ```
    ➜  ~ ssh richard.piedpiper.net
    Welcome to Ubuntu 18.04.3 LTS (GNU/Linux 4.15.0-66-generic x86_64)
