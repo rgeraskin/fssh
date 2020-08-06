@@ -85,9 +85,10 @@ def get_ssh_string(host, inventory_path, client=None):
             client_hosts.update(hosts)
     host_vars = client_hosts.get(host)
     if host_vars:
-        port_str = (' -p ' +
-                    str(host_vars['Port']) if host_vars['Port'] else '')
-        print(f"ssh{port_str} " f"{host_vars['HostName']}")
+        port_str = ("-p " +
+                    str(host_vars["Port"]) if host_vars["Port"] else "")
+        ssh_str = (f"{port_str} " f"{host_vars['HostName']}".lstrip())
+        print(ssh_str)
 
 
 def config_update(config_main, config_dir, inventory_path, client=None):

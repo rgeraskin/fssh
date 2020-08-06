@@ -10,7 +10,7 @@ function fssh() {
   fi
 
   echo "Composing host string..."
-  BUFFER="$(ANSIBLE_TRANSFORM_INVALID_GROUP_CHARS=ignore ${__FSSH_DIR}/inventory.py --inventory $FSSH_INVENTORY $client[1] $client[2] --string ${host} ) # $host"
+  BUFFER="${FSSH_SSH_COMMAND:-ssh} $(ANSIBLE_TRANSFORM_INVALID_GROUP_CHARS=ignore ${__FSSH_DIR}/inventory.py --inventory $FSSH_INVENTORY $client[1] $client[2] --string ${host} ) # $host"
   print -z "$BUFFER"
 }
 zle -N fssh
