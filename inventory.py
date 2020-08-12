@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import re
 
 from ansible.inventory.manager import InventoryManager
 from ansible.parsing.dataloader import DataLoader
@@ -17,7 +18,8 @@ def _get_ssh_params(inventory_file_name):
         vars = val.get_vars()
         hosts[host] = {
             "HostName": vars.get("ansible_host", host),
-            "Port": vars.get("ansible_port")
+            "Port": vars.get("ansible_port"),
+            "Options": vars.get("ansible_ssh_common_args")
         }
     return hosts
 
@@ -53,6 +55,21 @@ def _get_flat_hosts(client_hosts):
     return flat_list
 
 
+def _replace_ansible_host_with_ip(client_hosts, ssh_opts):
+    proxycommand_re = re.compile(r"ProxyCommand=[\"|'](.*)[\"|']")
+    host_re = re.compile(r"([a-zA-Z][\w\.-]+)")
+    proxycommand = proxycommand_re.findall(ssh_opts)
+    if proxycommand:
+        host = host_re.findall(proxycommand[0])
+        if "ssh" in host:
+            host.remove("ssh")
+        if host:
+            if host[0] in client_hosts:
+                ip = client_hosts[host[0]]["HostName"]
+                ssh_opts = ssh_opts.replace(host[0], ip)
+    return ssh_opts
+
+
 def get_clients(inventory_path):
     print(" ".join(_main("clients_only", inventory_path).keys()))
 
@@ -74,7 +91,7 @@ def get_client_hosts_all(inventory_path):
     print(" ".join(list(clients) + hosts))
 
 
-def get_ssh_string(host, inventory_path, client=None):
+def get_ssh_string(host, inventory_path, client=None, quote_opts_quotes=False):
     if client:
         client_hosts = _main("client_hosts",
                              inventory_path,
@@ -86,8 +103,20 @@ def get_ssh_string(host, inventory_path, client=None):
     host_vars = client_hosts.get(host)
     if host_vars:
         port_str = ("-p " +
-                    str(host_vars["Port"]) if host_vars["Port"] else "")
-        ssh_str = (f"{port_str} " f"{host_vars['HostName']}".lstrip())
+                    str(host_vars["Port"]) if host_vars["Port"] else None)
+        ssh_opts = host_vars["Options"]
+        if host_vars["Options"]:
+            ssh_opts = _replace_ansible_host_with_ip(client_hosts, ssh_opts)
+
+            if quote_opts_quotes:
+                ssh_opts = re.sub('("[^"]+")', r"'\g<1>'",
+                                  ssh_opts.replace("'", '"'))
+
+        ssh_args = [
+            x for x in [port_str, ssh_opts, host_vars['HostName']] if x
+        ]
+        ssh_str = f"{' '.join(ssh_args)}"
+
         print(ssh_str)
 
 
@@ -152,6 +181,10 @@ def _argparser():
     parser.add_argument("--config-main",
                         help="Path to the main ssh config",
                         default="~/.ssh/config")
+    # workaround for xxh
+    parser.add_argument("--quote-opts-quotes",
+                        help="Place quoted ssh options in quotes",
+                        action="store_true")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--string", help="Get ssh string")
     group.add_argument("--config",
@@ -181,7 +214,8 @@ if __name__ == "__main__":
         elif args.completion == "both":
             get_client_hosts_all(args.inventory)
     elif args.string:
-        get_ssh_string(args.string, args.inventory, args.client)
+        get_ssh_string(args.string, args.inventory, args.client,
+                       args.quote_opts_quotes)
     elif args.config:
         config_update(args.config_main, args.config_dir, args.inventory,
                       args.client)
