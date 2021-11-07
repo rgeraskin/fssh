@@ -19,7 +19,9 @@ def _get_ssh_params(inventory_file_name):
         hosts[host] = {
             "HostName": vars.get("ansible_host", host),
             "Port": vars.get("ansible_port"),
-            "Options": vars.get("ansible_ssh_common_args")
+            "Options": vars.get("ansible_ssh_common_args"),
+            "User": vars.get("ansible_user"),
+            "IdentityFile": vars.get("ansible_ssh_private_key_file")
         }
     return hosts
 
@@ -111,9 +113,12 @@ def get_ssh_string(host, inventory_path, client=None, quote_opts_quotes=False):
             if quote_opts_quotes:
                 ssh_opts = re.sub('("[^"]+")', r"'\g<1>'",
                                   ssh_opts.replace("'", '"'))
-
+        user_str = ("-l " +
+                    str(host_vars["User"]) if host_vars["User"] else "")
+        ident_str = ("-i " +
+                    str(host_vars["IdentityFile"]) if host_vars["IdentityFile"] else None)
         ssh_args = [
-            x for x in [port_str, ssh_opts, host_vars['HostName']] if x
+            x for x in [port_str, ssh_opts, user_str, ident_str, host_vars['HostName']] if x
         ]
         ssh_str = f"{' '.join(ssh_args)}"
 
