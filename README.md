@@ -214,7 +214,7 @@ You should add `FSSH_COMPLETION=both` setting to `~/.zshrc` to connect this way.
 
 ## Issues
 
-- Only `ansible_host` and `ansible_port` options are supported for now.
+- Only `ansible_host`, `ansible_port`, `ansible_user` and `ansible_ssh_private_key_file` options are supported for now.
 - `Jumphost` aka `ProxyCommand` aka `ansible_ssh_common_args` functionality is missing too. It'll be implemented it in the next releases firstly.
 
 PR are welcome!
