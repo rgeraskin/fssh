@@ -33,8 +33,7 @@ def _main(mode, inventory_path, target_client=None):
     for root, dirs, files in os.walk(inventory_path_full):
         for name in files:
             basename = os.path.basename(root)
-            if (basename not in ["vaults", "vars", "group_vars", "host_vars"]
-                    and os.path.splitext(name)[1] in [".yml", ".yaml"]):
+            if (basename not in ["vaults", "vars", "group_vars", "host_vars"]):
                 client = root.replace(inventory_path_full,
                                       "").split(os.sep)[0].split("-")[0]
                 if mode == "all":
